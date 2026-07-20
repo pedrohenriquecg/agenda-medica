@@ -2,7 +2,7 @@ from requests import RequestException
 
 from flask import Blueprint, current_app, redirect, render_template, request, session, url_for
 
-from app.auth import validate_user
+from app.auth import AuthenticationDatabaseError, validate_user
 from app.services.appointment_api import fetch_appointments
 
 
@@ -22,7 +22,14 @@ def login():
         username = request.form.get("username", "")
         password = request.form.get("password", "")
 
-        if validate_user(username, password):
+        try:
+            user_is_valid = validate_user(username, password)
+        except AuthenticationDatabaseError:
+            current_app.logger.exception("Erro ao acessar o banco de dados durante login.")
+            error = "Não foi possível acessar o sistema no momento. Tente novamente mais tarde."
+            return render_template("login.html", error=error)
+
+        if user_is_valid:
             session.clear()
             session["username"] = username
             return redirect(url_for("main.agenda"))
