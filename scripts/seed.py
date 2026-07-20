@@ -1,8 +1,10 @@
 from app.database import get_connection
+from werkzeug.security import generate_password_hash
 
 
 def main() -> None:
     connection = get_connection()
+    password_hash = generate_password_hash("admin123")
 
     try:
         connection.execute(
@@ -17,7 +19,11 @@ def main() -> None:
 
         connection.execute(
             "INSERT OR IGNORE INTO users (username, password) VALUES (?, ?)",
-            ("admin", "admin123"),
+            ("admin", password_hash),
+        )
+        connection.execute(
+            "UPDATE users SET password = ? WHERE username = ?",
+            (password_hash, "admin"),
         )
 
         connection.commit()
