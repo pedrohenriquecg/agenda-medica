@@ -2,4 +2,8 @@
 
 {% block title %}Agenda Médica{% endblock %}
 
-{% block content %}{% endblock %}
+{% block content %}
+    <h1>Agenda Médica</h1>
+    <p>Bem-vindo, {{ username }}.</p>
+    <a href="{{ url_for('main.logout') }}">Sair</a>
+{% endblock %}
