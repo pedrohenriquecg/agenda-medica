@@ -2,8 +2,40 @@
 
 {% block title %}Agenda Médica{% endblock %}
 
+{% block styles %}
+    <link href="https://unpkg.com/tabulator-tables@6.5.0/dist/css/tabulator.min.css" rel="stylesheet">
+{% endblock %}
+
 {% block content %}
     <h1>Agenda Médica</h1>
-    <p>Bem-vindo, {{ username }}.</p>
+
+    <p>Usuário autenticado: {{ username }}.</p>
     <a href="{{ url_for('main.logout') }}">Sair</a>
+
+    <label for="appointment-search">Buscar agendamentos</label>
+    <input
+        type="search"
+        id="appointment-search"
+        name="appointment_search"
+        placeholder="Buscar por paciente, CPF, médico, especialidade, convênio ou status"
+        {% if appointments_error %}disabled{% endif %}
+    >
+
+    <p id="appointments-loading">Carregando agendamentos...</p>
+    <div
+        id="appointments-table"
+        data-has-error="{{ 'true' if appointments_error else 'false' }}"
+    ></div>
+    <p id="appointments-message" {% if not appointments_error %}hidden{% endif %}>
+        {% if appointments_error %}{{ appointments_error }}{% endif %}
+    </p>
+
+    <script id="appointments-data" type="application/json">
+        {{ appointments|tojson }}
+    </script>
+{% endblock %}
+
+{% block scripts %}
+    <script src="https://unpkg.com/tabulator-tables@6.5.0/dist/js/tabulator.min.js"></script>
+    <script src="{{ url_for('static', filename='js/agenda.js') }}"></script>
 {% endblock %}

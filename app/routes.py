@@ -1,6 +1,9 @@
-from flask import Blueprint, redirect, render_template, request, session, url_for
+from requests import RequestException
+
+from flask import Blueprint, current_app, redirect, render_template, request, session, url_for
 
 from app.auth import validate_user
+from app.services.appointment_api import fetch_appointments
 
 
 main = Blueprint("main", __name__)
@@ -36,7 +39,24 @@ def agenda():
     if username is None:
         return redirect(url_for("main.login"))
 
-    return render_template("agenda.html", username=username)
+    appointments = []
+    appointments_error = None
+
+    try:
+        appointments = fetch_appointments(
+            current_app.config["APPOINTMENTS_API_URL"],
+            current_app.config["APPOINTMENTS_API_TIMEOUT"],
+        )
+    except (RequestException, ValueError):
+        current_app.logger.exception("Erro ao carregar agendamentos.")
+        appointments_error = "Não foi possível carregar os agendamentos."
+
+    return render_template(
+        "agenda.html",
+        username=username,
+        appointments=appointments,
+        appointments_error=appointments_error,
+    )
 
 
 @main.get("/logout")
